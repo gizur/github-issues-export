@@ -184,7 +184,7 @@ function listRepoIssues(repo_url){
         type: 'GET',
 
         success: function(data, textStatus, jqXHR){
-            logDebug('listRepoIssues: Yea, it worked...' + textStatus + ' - ' + JSON.stringify(data) );
+            logDebug('listRepoIssues: Yeah, it worked...' + textStatus + ' - ' + JSON.stringify(data) );
 
 
             // Print the result
@@ -193,7 +193,7 @@ function listRepoIssues(repo_url){
             $.each( data, function(index, value) {
 
                 // Manage json objects that not are mandatory
-                if(value.assignee == null)  value.assignee  = {login: 'not assgigned'};
+                if(value.assignee == null)  value.assignee  = {login: 'not assigned'};
                 if(value.milestone == null) value.milestone = {title: ''};
 
                 // create array of the labels

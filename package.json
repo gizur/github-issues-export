@@ -1,0 +1,33 @@
+{
+  "name": "github-issues-export",
+  "version": "0.1.0",
+  "description": "Export GithHub issues to a CSV file",
+  "main": "export-issues.js",
+  "dependencies": {
+    "jQuery": "~1.7.4",
+    "jsdom": "~0.6.0",
+    "optimist": "~0.4.0",
+    "xmlhttprequest": "~1.5.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/colmsjo/github-issues-export.git"
+  },
+  "keywords": [
+    "GitHub",
+    "issues",
+    "tickets",
+    "export",
+    "dump"
+  ],
+  "author": "Jonas Colmsjö (http://colmsjo.com)",
+  "contributors": [
+    "Matti Schneider <hi@mattischneider.fr> (http://mattischneider.fr)"
+  ],
+  "license": "WTFPL",
+  "preferGlobal": true
+}
