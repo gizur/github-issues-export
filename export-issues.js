@@ -25,14 +25,19 @@
 var $       = require('jQuery');
 var helpers = require('./helpers.js');
 var argv    = require('optimist')
-                .usage('Usage: ./export-issues --user [github user] --password [github password] --owner [github owner of repo] --repo [github repo] --full')
+                .usage('Usage: ./export-issues --user [github user] --password [github password] --owner [github owner of repo] --repo [github repo] --state [issues state] --bodynewlines [y/n] --full')
                 .demand(['user','password', 'owner', 'repo'])
                 .argv;
 
 var linkNextPage = null;
+var vState = null;
 
 // set logging level
 logging.threshold  = logging.warn;
+
+if (argv.bodynewlines == null) {
+    argv.bodynewlines = 'y';
+}
 
 
 // Globals
@@ -140,10 +145,13 @@ function listMyIssues(){
         url: 'https://api.github.com/issues?access_token=' + oauthToken.token,
         type: 'GET',
 
+        
         success: function(data, textStatus, jqXHR){
             logDebug('listMyIssues: Yea, it worked...' + textStatus + ' - ' + JSON.stringify(data) );
 
             $.each( data, function(index, value) {
+                value.body = value.body.replace(/(\r\n|\n|\r)/gm,"");
+
                 log( [value.comments, value.title, value.state, value.body, value.id ].join(sep) );
             });
 
@@ -169,8 +177,8 @@ function listMyIssues(){
 
 function listRepoIssuesHeader(){
 
-    (argv.full) ? log( ['number', 'id' , 'title', 'state', 'created by', 'assigned to', 'created at', 'milestone', 'labels', 'comments', 'body'].join(sep) ) :
-                  log( ['number', 'id' , 'title', 'state', 'created by', 'assigned to', 'created at', 'milestone', 'labels', 'comments'].join(sep) ) ;
+    (argv.full) ? log( ['number', 'id' , 'title', 'state', 'created by', 'assigned to', 'created at', 'updated at', 'closed at', 'milestone', 'labels', 'comments', 'body'].join(sep) ) :
+                  log( ['number', 'id' , 'title', 'state', 'created by', 'assigned to', 'created at', 'updated at', 'closed at', 'milestone', 'labels', 'comments'].join(sep) ) ;
 
 }
 
@@ -196,6 +204,10 @@ function listRepoIssues(repo_url){
                 if(value.assignee == null)  value.assignee  = {login: 'not assigned'};
                 if(value.milestone == null) value.milestone = {title: ''};
 
+                if (argv.bodynewlines === 'n') {
+                    value.body = value.body.replace(/(\r\n|\n|\r)/gm,"");    
+                }
+                
                 // create array of the labels
                 var labels = [];
                 $.each( value.labels, function(index, value) {
@@ -204,9 +216,9 @@ function listRepoIssues(repo_url){
 
 
                 // Print the result to stdout
-                (argv.full) ? log( [value.number, value.id, value.title, value.state, value.user.login, value.assignee.login, value.created_at, value.milestone.title, 
+                (argv.full) ? log( [value.number, value.id, value.title, value.state, value.user.login, value.assignee.login, value.created_at, value.updated_at, value.closed_at, value.milestone.title, 
                                     labels.join(','), value.comments, value.body].join(sep) ) :
-                              log( [value.number, value.id, value.title, value.state, value.user.login, value.assignee.login, value.created_at, value.milestone.title, 
+                              log( [value.number, value.id, value.title, value.state, value.user.login, value.assignee.login, value.created_at, value.updated_at, values.closed_at, value.milestone.title, 
                                     labels.join(','), value.comments].join(sep) ) ;
             });
 
@@ -279,9 +291,19 @@ $.when( getOauthToken(argv.user, argv.password) )
     .then( function() {
         logDebug('$.when.then...');
 
-        linkNextPage = 'https://api.github.com/repos/' + argv.owner + '/' + argv.repo + '/issues?access_token=' + oauthToken.token; // + '&per_page=100';
+        if (argv.state == null || argv.state == "all") {
+           vState = "open"; 
+        }
+
+        linkNextPage = 'https://api.github.com/repos/' + argv.owner + '/' + argv.repo + '/issues?state=' + vState + '&access_token=' + oauthToken.token; // + '&per_page=100';
 
         recurse();
+
+        if (argv.state == "all") {
+            linkNextPage = 'https://api.github.com/repos/' + argv.owner + '/' + argv.repo + '/issues?state=closed&access_token=' + oauthToken.token; // + '&per_page=100';
+
+            recurse();
+        }        
 
         //listMyIssues();
     })
