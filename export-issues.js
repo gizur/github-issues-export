@@ -33,7 +33,7 @@ var linkNextPage = null;
 var vState = null;
 
 // set logging level
-logging.threshold  = logging.warn;
+logging.threshold  = logging.warning;
 
 if (argv.bodynewlines == null) {
     argv.bodynewlines = 'y';
